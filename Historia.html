@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío Psico-Histórico (Completo)</title>
+    <style>
+        /* --- Estilos Generales y Tema Oscuro --- */
+        :root {
+            --color-fondo: #121212;
+            --color-superficie: #1e1e1e;
+            --color-borde: #333;
+            --texto-principal: #e0e0e0;
+            --texto-secundario: #a0a0a0;
+            --color-acento: #03dac6; /* Cyan verdoso */
+            --color-correcto: #4caf50; /* Verde */
+            --color-incorrecto: #cf6679; /* Rojo suave */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: var(--color-fondo);
+            color: var(--texto-principal);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* --- Contenedor Principal --- */
+        .quiz-container {
+            background-color: var(--color-superficie);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            border: 1px solid var(--color-borde);
+        }
+
+        .pantalla {
+            padding: 30px 40px;
+            transition: opacity 0.5s;
+        }
+
+        /* --- Pantalla de Inicio --- */
+        #pantalla-inicio h1 {
+            color: var(--color-acento);
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        #pantalla-inicio p {
+            text-align: center;
+            color: var(--texto-secundario);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .seleccion-documentos {
+            margin-bottom: 30px;
+        }
+
+        .seleccion-documentos h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .opciones-docs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .opciones-docs label {
+            background-color: var(--color-fondo);
+            border: 1px solid var(--color-borde);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+        }
+
+        .opciones-docs input[type="checkbox"] {
+            display: none;
+        }
+
+        .opciones-docs input[type="checkbox"]:checked + label {
+            background-color: var(--color-acento);
+            border-color: var(--color-acento);
+            color: var(--color-fondo);
+            font-weight: bold;
+        }
+
+        .opciones-docs label:hover {
+            background-color: #2a2a2a;
+        }
+
+        /* --- Botones --- */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--color-fondo);
+            background-color: var(--color-acento);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(3, 218, 198, 0.2);
+        }
+        
+        .btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            color: #888;
+        }
+
+        /* --- Pantalla del Quiz --- */
+        #pantalla-quiz {
+            display: none;
+        }
+        
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            color: var(--texto-secundario);
+            font-weight: bold;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pregunta-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        #texto-pregunta {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            text-align: center;
+            min-height: 100px;
+            flex-grow: 1;
+        }
+        
+        #btn-leer-pregunta {
+            background: none;
+            border: 1px solid var(--color-borde);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s, border-color 0.3s;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        #btn-leer-pregunta:hover {
+             background-color: #2a2a2a;
+        }
+        
+        #btn-leer-pregunta.activo {
+            border-color: var(--color-acento);
+        }
+
+        #btn-leer-pregunta svg {
+            width: 22px;
+            height: 22px;
+            fill: var(--texto-secundario);
+            transition: fill 0.3s;
+        }
+        
+        #btn-leer-pregunta.activo svg {
+            fill: var(--color-acento);
+        }
+
+
+        .opciones-respuesta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .opciones-respuesta .btn {
+            background-color: #333;
+            color: var(--texto-principal);
+        }
+        .opciones-respuesta .btn:hover:not(:disabled) {
+            background-color: #444;
+        }
+        .opciones-respuesta .btn.correcto {
+            background-color: var(--color-correcto);
+            color: white;
+        }
+        .opciones-respuesta .btn.incorrecto {
+            background-color: var(--color-incorrecto);
+            color: white;
+        }
+
+        #feedback {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            min-height: 150px; /* Aumentado para dar espacio al nuevo botón */
+            border: 1px solid transparent;
+        }
+
+        #feedback.correcto {
+            border-color: var(--color-correcto);
+        }
+
+        #feedback.incorrecto {
+            border-color: var(--color-incorrecto);
+        }
+        
+        #feedback h3 {
+            margin-bottom: 10px;
+        }
+
+        #feedback .justificacion {
+            margin-top: 10px;
+            color: var(--texto-secundario);
+            font-style: italic;
+        }
+
+        #btn-siguiente {
+            background-color: var(--color-borde);
+            color: var(--texto-principal);
+            font-size: 1rem;
+            padding: 12px;
+            width: auto;
+            min-width: 180px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* --- Pantalla Final --- */
+        #pantalla-final {
+            display: none;
+            text-align: center;
+        }
+
+        #pantalla-final h2 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: var(--color-acento);
+        }
+
+        #mensaje-final {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        #puntuacion-final-texto {
+             font-size: 1.2rem;
+             color: var(--texto-secundario);
+             margin-bottom: 30px;
+        }
+        
+        #btn-reiniciar {
+            background-color: #333;
+            color: var(--texto-principal);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        
+        <!-- Pantalla 1: Bienvenida y Selección de Documentos -->
+        <div id="pantalla-inicio" class="pantalla">
+            <h1>Desafío Psico-Histórico</h1>
+            <p>Pon a prueba tu conocimiento sobre la Historia de la Psicología en Uruguay.</p>
+            
+            <div class="seleccion-documentos">
+                <h2>Elige los documentos para el quiz:</h2>
+                <div class="opciones-docs" id="opciones-documentos">
+                    <!-- Las opciones se generarán con JS -->
+                </div>
+            </div>
+
+            <button id="btn-iniciar" class="btn">Comenzar Juego</button>
+            <p id="error-seleccion" style="color: var(--color-incorrecto); text-align: center; margin-top: 15px; display: none;">Por favor, selecciona al menos un documento.</p>
+        </div>
+
+        <!-- Pantalla 2: El Quiz -->
+        <div id="pantalla-quiz" class="pantalla">
+            <div class="quiz-header">
+                <span id="contador-pregunta">Pregunta X de Y</span>
+                <span id="preguntas-restantes">Quedan: Y</span>
+                <span id="puntuacion-actual">Puntuación: 0</span>
+            </div>
+            <div class="pregunta-wrapper">
+                <p id="texto-pregunta">Aquí va la pregunta...</p>
+                <button id="btn-leer-pregunta" title="Activar/Desactivar lectura en voz alta">
+                    <span id="icono-volumen-on">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path></svg>
+                    </span>
+                    <span id="icono-volumen-off" style="display: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"></path></svg>
+                    </span>
+                </button>
+            </div>
+            <div class="opciones-respuesta">
+                <button id="btn-verdadero" class="btn">Verdadero</button>
+                <button id="btn-falso" class="btn">Falso</button>
+            </div>
+            <div id="feedback">
+                 <!-- Botón Siguiente aparecerá aquí -->
+            </div>
+        </div>
+
+        <!-- Pantalla 3: Resultado Final -->
+        <div id="pantalla-final" class="pantalla">
+            <h2>Fin del Juego</h2>
+            <p id="mensaje-final">¡Excelente!</p>
+            <p id="puntuacion-final-texto">Tu puntuación final es: X / Y</p>
+            <button id="btn-reiniciar" class="btn">Jugar de Nuevo</button>
+        </div>
+
+    </div>
+
+    <script>
+    // --- BASE DE DATOS COMPLETA DE PREGUNTAS ---
+    const preguntas_db = {
+        '4': [
+            {'pregunta': 'El período de 1830 a 1880 en Uruguay fue una época de gran estabilidad política y paz social.', 'respuesta': false, 'justificacion': 'El documento describe este período como uno de constante conflicto. Cita a José Pedro Varela, quien afirmó que hubo "dieciocho revoluciones" en cuarenta y cinco años.'},
+            {'pregunta': 'La Constitución de 1830 fue elogiada por ser un texto práctico y perfectamente adaptado a la realidad social del país, especialmente a la de la población rural.', 'respuesta': false, 'justificacion': 'Fue criticada por su carácter teórico, por estar fundamentada en un saber académico más que en la realidad social del país y por no considerar la vida de la población rural y el caudillismo.'},
+            {'pregunta': 'José Pedro Varela consideraba que la educación popular era la base fundamental para construir una república y formar ciudadanos.', 'respuesta': true, 'justificacion': 'El documento cita directamente a Varela diciendo: "La escuela, pues, es la base de la república" y "para establecer la república, lo primero es formar los republicanos".'},
+            {'pregunta': 'El "militarismo" liderado por Lorenzo Latorre fue un proyecto exclusivamente militar, sin apoyo de sectores civiles o económicos.', 'respuesta': false, 'justificacion': 'Fue un "ensamble que conjugó el interés de sectores de poderío económico y fáctico del país", como los ganaderos ricos de la Asociación Rural del Uruguay (ARU) y los grupos financieros.'},
+            {'pregunta': 'La Ley de Educación Común de Varela, promulgada en 1877, estableció que la enseñanza pública debía ser gratuita, obligatoria y católica.', 'respuesta': false, 'justificacion': 'Los tres principios que instauró la ley fueron la gratuidad, la obligatoriedad y la laicidad de la enseñanza.'},
+            {'pregunta': 'La introducción del positivismo en Uruguay fue un proceso armónico que no generó polémicas con las corrientes de pensamiento existentes.', 'respuesta': false, 'justificacion': 'El texto afirma que la presencia del positivismo "desencadenó una controversia pública" y "la gran controversia entre espiritualistas y positivistas".'},
+            {'pregunta': 'Carlos Vaz Ferreira propuso y fundó el primer laboratorio o "gabinete" de psicología en Uruguay alrededor de 1897.', 'respuesta': true, 'justificacion': 'El documento indica que Vaz Ferreira formó un "pequeño gabinete de Psicología" y que él mismo afirmaba que "fue el primero que se instaló en Sud América".'},
+            {'pregunta': 'El laboratorio de psicología fundado por Vaz Ferreira tuvo una larga y próspera vida, convirtiéndose en el principal centro de investigación del país.', 'respuesta': false, 'justificacion': 'El laboratorio tuvo una existencia breve; su material se inutilizó, Vaz Ferreira cambió sus intereses y su sucesor no consideró que valiera la pena mantenerlo.'},
+            {'pregunta': 'Varela creía que los malos gobiernos eran la causa principal de los problemas de la nación.', 'respuesta': false, 'justificacion': 'Varela argumentaba lo contrario, que "es el estado social de esas mismas naciones el que marca el tipo que deben tener sus gobiernos". La causa era la ignorancia del pueblo.'},
+            {'pregunta': 'Francisco Berra, pedagogo influyente, sostenía que para enseñar era fundamental que el maestro estudiara la naturaleza psicológica del niño.', 'respuesta': true, 'justificacion': 'Se cita a Berra afirmando que "antes de enseñar es necesario estudiar la naturaleza psicológica del discípulo".'},
+            {'pregunta': 'En 1830, la mayor parte de la población uruguaya vivía en Montevideo.', 'respuesta': false, 'justificacion': 'El documento especifica que, de los 74.000 habitantes, el 81% residía en la campaña.'},
+            {'pregunta': 'El libro de Vaz Ferreira, "Curso Expositivo de Psicología Elemental", fue adoptado oficialmente en 1898 como texto para la enseñanza de la psicología.', 'respuesta': true, 'justificacion': 'Se menciona que "En febrero de 1898, el Consejo de Enseñanza Secundaria y Superior resolvió adoptar para la enseñanza de la psicología, el texto Curso de Psicología Elemental".'},
+            {'pregunta': 'En su curso de psicología, Vaz Ferreira promovía una única escuela de pensamiento, rechazando todas las demás.', 'respuesta': false, 'justificacion': 'Su método era "estrictamente imparcial, que concede un lugar a todas las teorías importantes", buscando evitar los dogmatismos.'},
+            {'pregunta': 'Varela abogó por la inclusión de las mujeres en la educación superior.', 'respuesta': true, 'justificacion': 'El texto indica que Varela "planteó que ese modelo debía concluir y posibilitar la inclusión de la mujer a la educación superior".'},
+            {'pregunta': 'Para estudiar los fenómenos mentales del niño, Francisco Berra propuso utilizar principalmente la introspección directa.', 'respuesta': false, 'justificacion': 'Berra argumentaba que no se pueden conocer los fenómenos internos del niño de manera directa, por lo que el camino es estudiarlos "a través de manifestaciones exteriores".'},
+            {'pregunta': 'El positivismo y el espiritualismo fueron dos corrientes filosóficas que entraron en una fuerte disputa en el campo intelectual uruguayo a finales del siglo XIX.', 'respuesta': true, 'justificacion': 'El documento describe esta disputa como "la gran controversia entre espiritualistas y positivistas", definiéndola como "la lucha de dos épocas, de dos sistemas, de dos ideales políticos".'},
+            {'pregunta': 'Vaz Ferreira consideraba el método de la introspección como completo y suficiente para hacer de la psicología una ciencia.', 'respuesta': false, 'justificacion': 'Vaz Ferreira consideraba el método de la introspección como "limitado", por lo que proponía sumar la "observación exterior a través de la Psicología Fisiológica".'},
+            {'pregunta': 'El "principismo" fue un movimiento político de jóvenes universitarios que apoyaba a los caudillos rurales.', 'respuesta': false, 'justificacion': 'Los principistas se opusieron a los caudillos, a quienes consideraban representantes de la "barbarie" y el "caos".'},
+            {'pregunta': 'Vaz Ferreira presentó la psicometría de Wundt como un desarrollo francés, y la psicología mórbida de Charcot como una corriente alemana.', 'respuesta': false, 'justificacion': 'Vaz Ferreira presentó el surgimiento de la psicometría de Wundt "en Alemania", y la corriente de Charcot como surgida "en Francia".'},
+            {'pregunta': 'Dámaso Antonio Larrañaga, uno de los primeros intelectuales del país, fue un férreo defensor del positivismo.', 'respuesta': false, 'justificacion': 'Larrañaga se formó en la Escolástica y su psicología correspondía a una "metafísica del espíritu", lo cual se opone a los fundamentos del positivismo.'}
+        ],
+        '5': [
+            {'pregunta': 'El período del "primer batllismo" (1903-1931) se caracterizó por promover un Estado con mínima intervención en la economía y en asuntos sociales.', 'respuesta': false, 'justificacion': 'En esta etapa se entendía que la intervención del Estado debía traducirse en el desarrollo de sus "funciones secundarias", como la salud, la educación y servicios públicos.'},
+            {'pregunta': 'El proyecto de "matriz de ciudadanía" del batllismo buscaba disciplinar las pasiones del pueblo a través de la educación.', 'respuesta': true, 'justificacion': 'El texto afirma que la escuela debía "disciplinaremos nuestras pasiones" y que su labor era formar "el carácter del hombre futuro".'},
+            {'pregunta': 'Enriqueta Compte y Riqué propuso en 1916 la creación de una Facultad de Pedagogía con fuerte base en la psicología experimental.', 'respuesta': true, 'justificacion': 'El documento menciona que Compte y Riqué propuso la creación de dicha facultad, preguntándose: "¿Cuáles son las conclusiones de la psicología experimental que pueden tener aplicación en la escuela primaria?".'},
+            {'pregunta': 'Clemente Estable, en "El reino de las vocaciones", rechazó el uso de la psicotecnia para la orientación vocacional.', 'respuesta': false, 'justificacion': 'Estable vio en la psicotecnia un avance positivo, afirmando que la determinación de las condiciones psicofisiológicas para distintas disciplinas, "emprendida en parte por la Psicotecnia- acaso en feliz encuentro cierren el circuito".'},
+            {'pregunta': 'El Laboratorio de Psicopedagogía fue creado el 13 de setiembre de 1933, con Sebastián Morey Otero como su primer director.', 'respuesta': true, 'justificacion': 'El Consejo Nacional de Enseñanza Primaria y Normal aprobó la creación del laboratorio en esa fecha, encomendando a Sebastián Morey Otero su dirección.'},
+            {'pregunta': 'La misión del Laboratorio de Psicopedagogía se limitaba exclusivamente a aplicar tests a los alumnos.', 'respuesta': false, 'justificacion': 'Su misión incluía investigación psicopedagógica, fichas de normalistas, evaluación del rendimiento escolar y orientación profesional.'},
+            {'pregunta': 'Sebastián Morey Otero consideraba que cualquier maestro podía aplicar tests psicológicos sin formación específica.', 'respuesta': false, 'justificacion': 'Morey Otero criticaba esa idea, afirmando que su aplicación requiere aprendizaje y que el uso de baremos extranjeros era una "falta técnica".'},
+            {'pregunta': 'Waclaw Radecki fue un psiquiatra uruguayo que desarrolló la teoría del psicoanálisis en el país.', 'respuesta': false, 'justificacion': 'Radecki era un psicólogo polaco que desarrolló un sistema psicológico propio denominado "discriminacionismo afectivo".'},
+            {'pregunta': 'La Liga Uruguaya de Higiene Mental fue fundada en 1924 por la Sección de Psiquiatría del Segundo Congreso Médico Nacional.', 'respuesta': true, 'justificacion': 'El texto señala que en dicho congreso, la Sección de Psiquiatría "deja establecida la Liga Uruguaya de Higiene Mental".'},
+            {'pregunta': 'El Código del Niño de 1934 estableció la creación del Consejo del Niño para centralizar la protección de la infancia.', 'respuesta': true, 'justificacion': 'La ley, promulgada en 1934, creó el Consejo del Niño como el "organismo encargado del bienestar de los menores".'},
+            {'pregunta': 'José Enrique Rodó fue un gran admirador de la cultura norteamericana y acuñó el término "arielismo" para promover sus valores.', 'respuesta': false, 'justificacion': 'Rodó fue un crítico de la admiración a la cultura de Estados Unidos, acuñando el término "nordomanía" en su obra "Ariel" para denunciar este fenómeno.'},
+            {'pregunta': 'El "ascenso de las clases medias" en Uruguay a principios del siglo XX se debió principalmente a la expansión del sistema educativo y la administración del Estado.', 'respuesta': true, 'justificacion': 'El documento explica que este fenómeno fue consecuencia de la "expansión económica, la industrialización, el fortalecimiento del sistema educativo y la expansión de la administración del Estado".'},
+            {'pregunta': 'Waclaw Radecki aplicó sus conocimientos de psicología a la selección de aviadores para el ejército de Brasil.', 'respuesta': true, 'justificacion': 'El texto menciona que Radecki, junto a la "Dirección de Aviación del ejército en Brasil, se dedicó a la investigación psicológica para la selección de aviadores".'},
+            {'pregunta': 'Las "clases diferenciales" (1927) y la "ficha médico-psicopedagógica-social" fueron herramientas para estudiar científicamente a niños con dificultades.', 'respuesta': true, 'justificacion': 'El proyecto de las clases diferenciales estaba dirigido a "identificar y atender a falsos anormales y psíquicos", y la ficha tenía el objetivo de "elaborar criterios de selección y estudio científico".'},
+            {'pregunta': 'El primer curso de "visitadoras de higiene", precursoras del servicio social, se dictó en 1928 por iniciativa de médicos de la Sanidad Escolar.', 'respuesta': true, 'justificacion': 'Se afirma que "En el año 1928, a iniciativa de los doctores Schiaffino y Ponce de León, se dictó un curso de dos años de duración con el objetivo de formar un grupo de visitadoras de higiene".'},
+            {'pregunta': 'La dimensión mental de la infancia no fue un tema relevante para las políticas de protección en las primeras décadas del siglo XX.', 'respuesta': false, 'justificacion': 'Al contrario, en el campo de la higiene "ganaba fuerza la dimensión psíquica como un componente a considerar en las prácticas de cuidado", lo que llevó a la creación de la Higiene Mental.'},
+            {'pregunta': 'El movimiento reformista de protección a la infancia debilitó el poder del Estado sobre los niños, fortaleciendo la autoridad de los padres.', 'respuesta': false, 'justificacion': 'El movimiento promovió "un involucramiento mayor por parte del Estado... fortaleciendo su poder y debilitando las facultades y derechos reconocidos a los padres".'},
+            {'pregunta': 'Durante la década de 1920, la enseñanza de la psicología en los Institutos Normales se basaba exclusivamente en el manual de Vaz Ferreira.', 'respuesta': false, 'justificacion': 'La reforma de 1925, impulsada por Morey Otero, desplazó el viejo programa e incluyó "contenidos sobre psicoanálisis, psicología introspectiva, gestalt, conductismo y psicología colectiva".'},
+            {'pregunta': 'La Sociedad de Psiquiatría del Uruguay fue fundada en 1923 por un grupo de jóvenes psiquiatras.', 'respuesta': true, 'justificacion': 'El texto confirma que "el 8 de noviembre de 1923, se fundó la Sociedad de Psiquiatría del Uruguay" por un grupo que incluía a Bernardo Etchepare y Santín Carlos Rossi.'},
+            {'pregunta': 'El gobierno de la infancia a principios del siglo XX implicó la articulación de la educación con la salud, bajo el paradigma del higienismo y la eugenesia.', 'respuesta': true, 'justificacion': 'El documento describe una "composición entre educación y salud". El higienismo permeó la educación y se enfatizó que el propósito era beneficiar "la salud moral y física del individuo y la especie".'}
+        ],
+        '6': [
+            {'pregunta': 'El estudio del "normotipo" uruguayo fue un proyecto dirigido por el Dr. Carlos Vaz Ferreira para entender las características del adulto mayor en Montevideo.', 'respuesta': false, 'justificacion': 'El estudio fue sobre el niño y el adolescente, y fue un emprendimiento importante para la psicología en el país, contando con la participación de Emilio Mira y López.'},
+            {'pregunta': 'La investigación del "normotipo" comenzó en abril de 1944 y fue una colaboración entre varias instituciones educativas.', 'respuesta': true, 'justificacion': 'Fue una colaboración entre el Consejo de Enseñanza Primaria y Normal, el Consejo de Enseñanza Secundaria, el Consejo del Niño y el de Enseñanza Industrial.'},
+            {'pregunta': 'En el estudio del "normotipo", la sección médica fue la más numerosa y se dividió en más de 15 equipos de trabajo.', 'respuesta': false, 'justificacion': 'La sección psicológica fue la más numerosa y se subdividió en 11 equipos.'},
+            {'pregunta': 'El Centro de Estudios Psicológicos de Montevideo fue creado en 1945 por discípulos de la escuela psicológica de Waclaw Radecki.', 'respuesta': true, 'justificacion': 'El acta fundacional del 29 de enero de 1945 indica que sus participantes se reconocieron como discípulos de la Escuela Psicológica de Radecki.'},
+            {'pregunta': 'El Centro de Estudios Psicológicos ofrecía un plan de formación de dos años centrado exclusivamente en la psicología experimental.', 'respuesta': false, 'justificacion': 'El plan de formación era de cuatro años y abarcaba múltiples áreas como Psicología General, Social, Jurídica, Médica y Pedagógica.'},
+            {'pregunta': 'El Primer Congreso Latinoamericano de Psicología se realizó en Montevideo en 1950, organizado por el Centro de Estudios Psicológicos.', 'respuesta': true, 'justificacion': 'Fue una propuesta del Centro de Estudios Psicológicos y se celebró en Montevideo a partir del 20 de julio de 1950.'},
+            {'pregunta': 'Tras el éxito del primer congreso, el Segundo Congreso Latinoamericano de Psicología se celebró en Montevideo al año siguiente.', 'respuesta': false, 'justificacion': 'Se planeó realizarlo en Curitiba (Brasil) en 1953, pero fue aplazado y finalmente no se concretó.'},
+            {'pregunta': 'La Clínica Médico Psicológica del Hospital Pedro Visca fue creada en 1947 bajo la dirección del Dr. Julio Marcos, con el objetivo de abordar el estudio psicosomático del niño.', 'respuesta': true, 'justificacion': 'Fue creada en setiembre de 1947 bajo la dirección del Dr. Julio Marcos para el estudio integral del niño, considerando su unidad psicosomática.'},
+            {'pregunta': 'La Clínica Médico Psicológica se negó a utilizar técnicas psicoanalíticas, como la sala de juegos, por considerarlas poco científicas.', 'respuesta': false, 'justificacion': 'Al contrario, la clínica contó con una sala de juegos, un requerimiento que las corrientes psicoanalíticas consideraban necesario para el trabajo con niños.'},
+            {'pregunta': 'En 1950, la Facultad de Medicina inició los cursos de Psicología Aplicada a la Infancia, cuya formación práctica se desarrollaba en la Clínica Médico Psicológica.', 'respuesta': true, 'justificacion': 'Los cursos se iniciaron en 1950 en la Sección Auxiliares del Médico de la Facultad de Medicina, con prácticas en la Clínica Médico Psicológica.'},
+            {'pregunta': 'La primera propuesta para crear la Licenciatura en Psicología en la Facultad de Humanidades y Ciencias fue elaborada por Mario Berta en 1948 y se implementó de inmediato.', 'respuesta': false, 'justificacion': 'Hubo una propuesta inicial de Horacio Rimoldi en 1951 que no llegó a implementarse. Mario Berta fue central en la creación posterior.'},
+            {'pregunta': 'La propuesta de Horacio Rimoldi para la licenciatura era muy exigente y requería que los aspirantes tuvieran estudios universitarios previos y conocimiento del idioma inglés.', 'respuesta': true, 'justificacion': 'Entre los requisitos se incluían "Antecedentes de haber cursado satisfactoriamente estudios completos en escuelas universitarias" y "Conocimiento de idioma inglés".'},
+            {'pregunta': 'El Dr. Rimoldi encontró un ambiente académico muy receptivo y con excelentes recursos, lo que facilitó la rápida creación de la licenciatura bajo su dirección.', 'respuesta': false, 'justificacion': 'Rimoldi denunció reiteradas falencias, falta de interlocutores estables y deficiencias en los materiales, lo que creó un ambiente desgastante y poco receptivo.'},
+            {'pregunta': 'La Licenciatura en Psicología en la Facultad de Humanidades y Ciencias se aprobó finalmente el 23 de marzo de 1956.', 'respuesta': true, 'justificacion': 'El documento confirma que en esa fecha "se aprobó la Propuesta de Licenciatura en Psicología".'},
+            {'pregunta': 'El plan de estudios de 1956 para la licenciatura se organizó de manera que los conocimientos teóricos se impartían después de la práctica experimental.', 'respuesta': false, 'justificacion': 'El plan establecía una progresión que iba de lo teórico a lo aplicado y experimental, y de lo general a lo particular.'},
+            {'pregunta': 'La Sociedad de Psicología del Uruguay se fundó en 1953 con el objetivo de promover la psicología únicamente como una disciplina científica.', 'respuesta': false, 'justificacion': 'Se fundó para "propender al desarrollo de la Psicología como ciencia y como profesión".'},
+            {'pregunta': 'Durante la década de 1950, no existió ningún conflicto entre los campos de la psiquiatría y la psicología en Uruguay.', 'respuesta': false, 'justificacion': 'Hubo un importante conflicto por la delimitación del campo profesional, especialmente en lo referente a la psicoterapia, que la psiquiatría reclamaba como territorio exclusivo.'},
+            {'pregunta': 'El Dr. Reyes Terra, en 1958, defendió que los psicólogos no médicos debían tener prohibido "el arte de curar", considerándolo "intrusismo científico".', 'respuesta': true, 'justificacion': 'Consideró a los psicólogos clínicos y psicoterapeutas no médicos como parte del "intrusismo científico".'},
+            {'pregunta': 'Mario Berta, a pesar de dirigir el Instituto de Psicología, argumentó que la psicoterapia debía ser un monopolio exclusivo de los médicos psiquiatras.', 'respuesta': false, 'justificacion': 'Berta propuso la creación de una Escuela de Psicoterapia a la que pudieran acceder tanto psiquiatras como psicólogos, buscando una solución intermedia.'},
+            {'pregunta': 'Juan Carlos Carrasco fue uno de los actores que defendió la idea de que los límites del ejercicio profesional de la psicología no eran inmutables.', 'respuesta': true, 'justificacion': 'Carrasco "cuestionó el planteo focalizando en el error que implica concebir estas definiciones como inmutables, naturalizadas e incuestionables".'},
+            {'pregunta': 'La Sociedad de Psicologia del Uruguay se constituyó en diciembre de 1953 con la finalidad de propender al desarrollo de la Psicologia como ciencia y como profesión.', 'respuesta': true, 'justificacion': 'El texto confirma explícitamente esta información, señalando: "El 7 de diciembre de 1953, se constituyó la Sociedad de Psicología del Uruguay, con la finalidad de: \'propender al desarrollo de la Psicología como ciencia y como profesión\'".'},
+            {'pregunta': 'La Facultad Libre de Psicología fue un proyecto del Centro de Estudios Psicológicos de Montevideo que nunca llegó a concretarse.', 'respuesta': false, 'justificacion': 'Sí llegó a funcionar. El Centro de Estudios Psicológicos de Montevideo comenzó a nombrarla como tal con el inicio de sus cursos en 1951 y para 1952 ya funcionaban dos años lectivos de la facultad.'},
+            {'pregunta': 'En mayo de 1958, la Sociedad de Psiquiatría del Uruguay, en voz del Dr. Reyes Terra, abordó la relación entre Psiquiatría y Psicología a partir de la definición de intrusismo científico.', 'respuesta': true, 'justificacion': 'El documento confirma que el 27 de mayo de 1958, el Dr. Reyes Terra disertó sobre la relación entre psiquiatría y psicología, definiendo el intrusismo científico como "el conjunto de prácticas médico-terapéuticas realizadas por quienes no son médicos".'}
+        ],
+        '7': [
+            {'pregunta': 'La intervención de la UDELAR el 28 de octubre de 1973 fue decretada inmediatamente después de que una bomba explotara en la Facultad de Ingeniería.', 'respuesta': true, 'justificacion': 'El 27 de octubre de 1973 explotó una bomba en la Facultad de Ingeniería. Al día siguiente, el Poder Ejecutivo emitió el decreto que disponía la intervención.'},
+            {'pregunta': 'La mayoría de los decanos y rectores interventores designados durante la dictadura eran militares sin trayectoria previa en la UDELAR.', 'respuesta': false, 'justificacion': 'Fueron, en su mayoría, personas con carreras docentes en los diferentes servicios universitarios, como Mario Berta o Luis Sayagués Laso.'},
+            {'pregunta': 'Como resultado de las medidas represivas durante la intervención, cerca del 45% del personal docente de la UDELAR fue destituido.', 'respuesta': true, 'justificacion': 'Denuncias de la época y estudios posteriores afirmaron que "cerca del 45% del plantel docente fue eliminado por las diversas causales".'},
+            {'pregunta': 'La Licenciatura en Psicología que funcionaba en la Facultad de Humanidades y Ciencias (FHC) fue cerrada tras la intervención de 1973 y nunca volvió a reabrir.', 'respuesta': true, 'justificacion': 'Se afirma que "La Licenciatura en Psicología cerró sus puertas y no volvió a abrir nunca más" y que "se cerró definitivamente".'},
+            {'pregunta': 'La Escuela Universitaria de Psicología (EUP), creada en 1975, fue dirigida inicialmente por Juan Carlos Carrasco, quien diseñó su plan de estudios.', 'respuesta': false, 'justificacion': 'El primer director de la EUP fue el Dr. Mario Berta, quien también redactó el plan de formación. Juan Carlos Carrasco debió exiliarse.'},
+            {'pregunta': 'El plan de estudios de la EUP fue diseñado para formar psicólogos con plenas capacidades para el ejercicio autónomo de la psicoterapia.', 'respuesta': false, 'justificacion': 'El plan de la EUP establecía que "las funciones del egresado se limitaban al psicodiagnóstico" y que "no tiene la preparación específica para ejercer psicoterapia".'},
+            {'pregunta': 'En 1958, el Dr. Reyes Terra calificó el ejercicio de la psicoterapia por parte de psicólogos no médicos como "intrusismo en psiquiatría".', 'respuesta': true, 'justificacion': 'En la sesión del 27 de mayo de 1958, el Dr. Reyes Terra disertó sobre "El intrusismo en psiquiatría", refiriéndose a psicólogos clínicos y psicoanalistas no médicos.'},
+            {'pregunta': 'Como solución a la disputa por la psicoterapia, Mario Berta propuso en 1958 la creación de una Escuela de Psicoterapia a la que pudieran acceder médicos y psicólogos.', 'respuesta': true, 'justificacion': 'Berta propuso "la creación de una Escuela Universitaria de Psicoterapia a la que podrían acceder Psicólogos y Médicos con título universitario".'},
+            {'pregunta': 'Durante la dictadura, el presupuesto para la UDELAR aumentó considerablemente.', 'respuesta': false, 'justificacion': 'El documento afirma que "los fondos asignados a ese rubro disminuyeron sostenidamente en todo el período", mostrando una baja en la asignación por alumno.'},
+            {'pregunta': 'El gobierno de facto puso fin al monopolio de la UDELAR sobre la educación superior al habilitar en 1984 la enseñanza privada de nivel terciario.', 'respuesta': true, 'justificacion': 'Un decreto de agosto de 1984 "habilitó la enseñanza privada de nivel terciario (dando pie a la creación de la primera universidad confesional)".'},
+            {'pregunta': 'La propuesta de reglamentación de la profesión de psicólogo de 1980, elaborada por Berta y Grolero, fue bien recibida por los colectivos de psicólogos.', 'respuesta': false, 'justificacion': 'Generó un amplio rechazo. El Rector Interventor concluyó que "la mayoría de las respuestas fueron de rechazo" y que el anteproyecto debía desecharse.'},
+            {'pregunta': 'Una de las críticas centrales al proyecto de Berta y Grolero fue que solo reconocía a la EUP como formación válida.', 'respuesta': true, 'justificacion': 'La Escuela de Tecnología Médica planteó que "se desconoce la formación en psicología de distintos espacios universitarios y solo reconoce a la EUP".'},
+            {'pregunta': 'Durante la intervención, la actividad académica de la UDELAR se reorientó para priorizar la investigación científica por sobre la enseñanza aplicada.', 'respuesta': false, 'justificacion': 'Ocurrió lo contrario: "se prestó más atención a las tareas de enseñanza que a las de investigación" para formar egresados que respondieran a las "necesidades del mercado".'},
+            {'pregunta': 'El convenio de 1976 con el BID proponía fortalecer las "carreras tecnológicas cortas".', 'respuesta': true, 'justificacion': 'Un punto central del proyecto con el BID era el fortalecimiento de las "carreras tecnológicas cortas" en diversas áreas.'},
+            {'pregunta': 'Al finalizar la dictadura, las nuevas autoridades democráticas mantuvieron los exámenes de ingreso implementados por los interventores.', 'respuesta': false, 'justificacion': 'Una de las primeras medidas del CDC restaurado fue dejar "sin efecto las normas limitativas del ingreso y reingreso de estudiantes".'},
+            {'pregunta': 'En 1971, el Dr. Tobler impulsó normas que restringían la psicoterapia al control de un médico especialista.', 'respuesta': true, 'justificacion': 'El Dr. Tobler elevó una propuesta de normas donde se puntualizaba "que la terapia debía ejercerse bajo control del médico especialista".'},
+            {'pregunta': 'Las diferentes asociaciones de psicólogos actuaron de forma desarticulada durante la etapa final de la dictadura.', 'respuesta': false, 'justificacion': 'Hubo un proceso de unificación que llevó a que en octubre de 1983 se reunieran por primera vez todas las asociaciones de egresados, lo que culminó en la creación de la "Coordinadora de Psicólogos".'},
+            {'pregunta': 'La APUEETM argumentó que la supervisión médica en psicoterapia era innecesaria, ya que los propios psiquiatras debían formarse aparte para ejercerla.', 'respuesta': true, 'justificacion': 'La APUEETM subrayó que "los médicos psiquiatras que en nuestro medio se dedican al tratamiento psicológico, han debido formarse para ello de manera independiente a su carrera médica".'},
+            {'pregunta': 'Durante la intervención, la Facultad de Humanidades y Ciencias (FHC) fue cerrada por completo.', 'respuesta': false, 'justificacion': 'La Licenciatura en Psicología fue cerrada en la FHC, pero la facultad no. Al contrario, fue un espacio donde se crearon nuevas carreras.'},
+            {'pregunta': 'La Sociedad de Psicología del Uruguay (SPU) objetó que institutos privados otorgaran títulos de psicólogo al mismo nivel que la UDELAR.', 'respuesta': true, 'justificacion': 'Ante un anteproyecto que habilitaba a institutos privados, la SPU "objetó duramente que instituciones privadas otorgasen título para ejercer la profesión al mismo nivel que la UdelaR".'}
+        ],
+        '8': [
+            {'pregunta': 'La Facultad de Psicología fue creada en 1985, inmediatamente después del fin de la dictadura.', 'respuesta': false, 'justificacion': 'El Consejo Directivo Central de la Universidad de la República aprobó la creación de la Facultad de Psicología el 15 de marzo de 1994.'},
+            {'pregunta': 'La idea de unificar la formación en psicología en un "Centro Único" surgió por primera vez en la década de 1990.', 'respuesta': false, 'justificacion': 'Era una idea que "ya se venía gestando con anterioridad", citada en un documento de la Coordinadora de Psicólogos de julio de 1984.'},
+            {'pregunta': 'El Instituto de Psicología de la Universidad de la República (IPUR), creado en 1988, tenía como objetivo fusionar los planes de estudio de la EUP y de Psicología Infantil.', 'respuesta': false, 'justificacion': 'El documento aclara que "No se trata, en consecuencia de unificar planes anteriores", sino de "crear un nuevo tipo de formación en Psicología".'},
+            {'pregunta': 'La unificación de la formación en psicología involucró a la EUP, al Curso de Psicología Infantil y a docentes de la antigua Licenciatura de Humanidades.', 'respuesta': true, 'justificacion': 'Juan Carlos Carrasco, en su carta al rector, detalla que para analizar la situación fue necesario reunirse con todos esos gremios y sectores.'},
+            {'pregunta': 'La ley que regula la profesión de psicólogo en Uruguay fue aprobada en 1991.', 'respuesta': false, 'justificacion': 'La ley definitiva (Nº 17.154) fue publicada y promulgada en agosto de 1999.'},
+            {'pregunta': 'Los primeros intentos por regular la profesión de psicólogo en Uruguay comenzaron en la década de 1980.', 'respuesta': false, 'justificacion': 'La Sociedad de Psicología del Uruguay, fundada en 1953, ya declaraba en sus estatutos "la necesidad de regular la profesión".'},
+            {'pregunta': 'La "Unión de Psicólogos del Uruguay" apoyó el proyecto de ley porque garantizaba el reconocimiento de títulos de institutos no universitarios.', 'respuesta': false, 'justificacion': 'Al contrario, este grupo expresó su preocupación porque sus profesionales "no estaban contemplados en la fría letra del proyecto".'},
+            {'pregunta': 'Según la "Unión de Psicólogos del Uruguay", la enseñanza en la Facultad de Psicología de la UDELAR era plural y diversa.', 'respuesta': false, 'justificacion': 'Hicieron la afirmación opuesta, diciendo que en la Universidad "se sigue una corriente básicamente psicoanalista".'},
+            {'pregunta': 'La Ley Nº 17.154 establece que cualquier persona con un título de un instituto de psicología, sin importar su nivel, puede ejercer.', 'respuesta': false, 'justificacion': 'El Artículo 2° exige un "Título de licenciado en psicología o equivalente, otorgado por... universidades o institutos universitarios habilitados por el Estado".'},
+            {'pregunta': 'La Facultad de Psicología creó cinco Institutos (Clínica, Social, etc.) como parte de su transformación académica post-2007.', 'respuesta': true, 'justificacion': 'El texto menciona que en 2010 la Facultad concretó la creación de estos cinco institutos.'},
+            {'pregunta': 'La Facultad creó el Centro de Investigación Clínica (CIC-P) y el Centro de Investigación Básica (CIB-Psi) para fortalecer la producción de conocimiento.', 'respuesta': true, 'justificacion': 'El documento confirma la creación del CIC-P en 2009 y del CIB-Psi en 2010 para fortalecer la investigación.'},
+            {'pregunta': 'El nuevo plan de estudios de la Licenciatura, diseñado después de 2007, se caracterizaba por una estructura rígida.', 'respuesta': false, 'justificacion': 'El nuevo plan "prevé una estructura de amplia flexibilidad... que promueve la movilidad del estudiante... a través de itinerarios singulares".'},
+            {'pregunta': 'Hacia 2009, la Facultad de Psicología ofrecía maestrías gratuitas en Psicología Social y Psicología Clínica.', 'respuesta': true, 'justificacion': 'Se indica que en 2009 se puso en marcha la primera edición de dichas maestrías y que "los estudios de posgrados y formación permanente son de carácter gratuito".'},
+            {'pregunta': 'La creación de un Claustro General de Psicología fue una propuesta de Juan Carlos Carrasco en 1985 para unificar la formación.', 'respuesta': true, 'justificacion': 'En su carta al Rector, Carrasco, tras constatar que la idea de un "Centro Único" era unánime, propone la creación de dicho claustro como "ámbito general de discusión".'},
+            {'pregunta': 'La comisión especial de la Ley 17.154 para habilitar profesionales no universitarios estaba integrada solo por delegados de la UDELAR.', 'respuesta': false, 'justificacion': 'El Artículo 4° establece que estaba integrada por representantes del MEC, la UDELAR y la Universidad Católica.'},
+            {'pregunta': 'Un desafío de la Facultad a fines de la década de 2000 era la baja matrícula estudiantil.', 'respuesta': false, 'justificacion': 'Los desafíos eran "aumentar los niveles de retención" e "incrementar el número anual de graduados", lo que sugiere problemas en la permanencia, no en el ingreso.'},
+            {'pregunta': 'El inicio de funciones del IPUR en 1988 enfrentó dificultades como la falta de presupuesto y el alto crecimiento de la matrícula.', 'respuesta': true, 'justificacion': 'El texto describe que la puesta en marcha del IPUR trajo "una serie de inconvenientes", entre ellos "el alto crecimiento de la matricula estudiantil y la falta de presupuesto".'},
+            {'pregunta': 'La ley uruguaya que regula la profesión de psicólogo prohíbe ejercer a quienes obtuvieron su título en universidades extranjeras.', 'respuesta': false, 'justificacion': 'La ley permite el ejercicio a quienes posean un "Título... otorgado por universidades extranjeras, revalidado por la autoridad competente".'},
+            {'pregunta': 'Uno de los objetivos del proyecto de transformación de la Facultad (2007-2010) era aumentar la dedicación horaria de sus docentes.', 'respuesta': true, 'justificacion': 'Dentro de las políticas de producción de conocimiento, se menciona como acción el "aumento de la dedicación horaria docente y estimulo al régimen de DT".'},
+            {'pregunta': 'La Coordinadora de Psicólogos se opuso a incluir un artículo en la ley que permitiera a profesionales no universitarios tramitar su habilitación.', 'respuesta': false, 'justificacion': 'Se acordó incluir un artículo (el 3° de la ley final) "que garantiza la posibilidad de tramitar su Título Profesional... a través de la demostración de idoneidad".'}
+        ],
+        '9': [
+            {'pregunta': 'El desarrollo de la profesión de psicólogo en Uruguay es muy anterior al desarrollo de su academia o producción científica.', 'respuesta': true, 'justificacion': 'El documento afirma que el devenir de la psicología en Uruguay "se ha caracterizado fuertemente por el desarrollo de la profesión antes que el de su academia".'},
+            {'pregunta': 'La intervención de la dictadura en 1973 significó un gran avance para la investigación psicológica en la Universidad.', 'respuesta': false, 'justificacion': 'El autor afirma que la intervención fue "un retroceso de casi más de dos décadas, si no más, donde la investigación psicología en la Universidad quedó relegada a un segundo plano".'},
+            {'pregunta': 'El año 2005 es considerado clave para el "despertar académico" de la psicología en Uruguay, debido a nuevas políticas sociales y mayor financiamiento.', 'respuesta': true, 'justificacion': 'Se establece que "El año 2005 es clave" para la academización, mencionando la creación del MIDES, la ANII y el aumento del presupuesto universitario.'},
+            {'pregunta': 'La "empresalización" de la universidad se refiere al fenómeno por el cual esta adopta una lógica de competencia, productividad y mercantilización.', 'respuesta': true, 'justificacion': 'El texto describe este fenómeno como la "infiltración de una lógica de la competencia propia de las empresas al interior de la universidad" y un "modelo productivista".'},
+            {'pregunta': 'El nuevo plan de estudios de psicología aprobado en 2013 extendió la carrera a seis años para hacerla más rigurosa.', 'respuesta': false, 'justificacion': 'El documento especifica que una de las novedades del nuevo plan fue "la reducción de la cursada a cuatro años en lugar de 5".'},
+            {'pregunta': 'El autor recomienda a los investigadores latinoamericanos publicar exclusivamente en revistas locales para evitar la influencia de agendas científicas extranjeras.', 'respuesta': false, 'justificacion': 'Si bien critica la presión por publicar en inglés, también menciona que la "endogamia" (circulación local) es una tendencia que puede llevar a la "segmentación de la ciencia". La postura es compleja, no un llamado al aislamiento.'},
+            {'pregunta': 'El intento de cambiar el plan de estudios en 1971, que incluía crear un Doctorado, es visto como un hito en el esfuerzo de academización de la disciplina.', 'respuesta': true, 'justificacion': 'El documento señala que el plan de 1971, que incorporaba un "ciclo de Doctorado", parece querer "retomar aquella prioridad en la investigación psicológica".'},
+            {'pregunta': 'La creación de la ANII y el aumento del presupuesto universitario fueron factores clave que impulsaron la investigación en psicología después de 2005.', 'respuesta': true, 'justificacion': 'Se identifica como "el componente más significativo" para el desarrollo de la investigación al "aumento del presupuesto universitario y la creación de una nueva institucionalidad como sostén para el desarrollo de la ciencia... (nos referimos a la ANII)".'},
+            {'pregunta': 'Durante el decanato de Luis Leopold (2007-2015), la estructura académica de la Facultad de Psicología se mantuvo sin cambios significativos.', 'respuesta': false, 'justificacion': 'Al contrario, el texto señala que se produjeron "transformaciones que modificaron radicalmente la estructura", como el desarme de las "Áreas" para crear cinco grandes institutos.'},
+            {'pregunta': 'El plan de estudios de 2013 introdujo la obligatoriedad de un trabajo final de grado.', 'respuesta': true, 'justificacion': 'Entre las novedades del nuevo plan, el texto enumera "la obligatoriedad de un trabajo final de grado como requisito para la graduación".'},
+            {'pregunta': 'La precarización del trabajo académico, con contratos de corta duración, es una de las condiciones que afecta la producción intelectual en la región.', 'respuesta': true, 'justificacion': 'El texto menciona que las condiciones de producción "se han visto modificadas a partir de la contratación por trabajos puntuales y de corta duración".'},
+            {'pregunta': 'Las agendas de investigación en la universidad son definidas únicamente por los investigadores.', 'respuesta': false, 'justificacion': 'El documento concluye que la agenda "es compuesta o definida en un complejo sistema... donde las preferencias del mercado y la orientación estatal de los instrumentos de financiamiento juegan un rol clave".'},
+            {'pregunta': 'La Facultad de Psicología fundó la revista "Psicología, Conocimiento y Sociedad" a finales de la década de 1980.', 'respuesta': false, 'justificacion': 'El texto indica que la revista fue creada en el año 2010.'},
+            {'pregunta': 'Un hito importante en la formalización de la psicología en la salud fue la firma de un convenio para un practicantado remunerado para estudiantes.', 'respuesta': true, 'justificacion': 'El documento señala como un componente clave "la firma de un convenio" entre la Facultad, ASSE y el MSP que "instituyó el practicantado... de forma remunerada".'},
+            {'pregunta': 'Previo a 2005, la investigación en psicología en Uruguay era completamente inexistente.', 'respuesta': false, 'justificacion': 'El texto matiza que "haber las hubo pero en proporciones notoriamente menores a las actuales" y que se hacían "en condiciones excepcionales".'},
+            {'pregunta': 'El rectorado de Rodrigo Arocena impulsó una "Segunda Reforma Universitaria" que promovió la descentralización.', 'respuesta': true, 'justificacion': 'El documento menciona que Arocena asumió en 2006 "impulsando lo que él denominó la Segunda Reforma Universitaria", y una de sus líneas de acción fue "la descentralización de la universidad".'},
+            {'pregunta': 'La investigación psicológica en Uruguay ha logrado superar por completo los problemas de la región, como la influencia de agendas externas.', 'respuesta': false, 'justificacion': 'El documento cierra afirmando que "la investigación psicológica del país no escapa a los problemas de la región".'},
+            {'pregunta': 'Carlos Vaz Ferreira es mencionado como uno de los pioneros que intentó introducir la psicología científica en Uruguay a finales del siglo XIX.', 'respuesta': true, 'justificacion': 'El texto pone como ejemplo de los intentos de introducción de la psicología a fines del XIX, los esfuerzos de Carlos Vaz Ferreira, quien fundó "el primer laboratorio de Psicología Experimental para fines didácticos".'},
+            {'pregunta': 'El plan de estudios del IPUR se mantuvo vigente hasta la aprobación del nuevo plan en 2013.', 'respuesta': true, 'justificacion': 'El plan IPUR de 1988 fue sustituido por el nuevo plan de estudios aprobado en 2013.'},
+            {'pregunta': 'El gobierno de Gabriel Terra, en 1933, creó el Ministerio de Protección a la Infancia.', 'respuesta': true, 'justificacion': 'A propuesta del Ministro de Instrucción Pública, el gobierno de Terra creó en 1933 el Ministerio de Protección a la Infancia.'}
+        ]
+    };
+
+
+    // --- LÓGICA DEL JUEGO ---
+
+    // Referencias a elementos del DOM
+    const pantallaInicio = document.getElementById('pantalla-inicio');
+    const pantallaQuiz = document.getElementById('pantalla-quiz');
+    const pantallaFinal = document.getElementById('pantalla-final');
+    
+    const opcionesDocumentosContainer = document.getElementById('opciones-documentos');
+    const btnIniciar = document.getElementById('btn-iniciar');
+    const errorSeleccion = document.getElementById('error-seleccion');
+
+    const contadorPreguntaEl = document.getElementById('contador-pregunta');
+    const preguntasRestantesEl = document.getElementById('preguntas-restantes');
+    const puntuacionActualEl = document.getElementById('puntuacion-actual');
+    const textoPreguntaEl = document.getElementById('texto-pregunta');
+    const btnLeerPregunta = document.getElementById('btn-leer-pregunta');
+    const iconoVolumenOn = document.getElementById('icono-volumen-on');
+    const iconoVolumenOff = document.getElementById('icono-volumen-off');
+    const btnVerdadero = document.getElementById('btn-verdadero');
+    const btnFalso = document.getElementById('btn-falso');
+    const feedbackEl = document.getElementById('feedback');
+
+    const mensajeFinalEl = document.getElementById('mensaje-final');
+    const puntuacionFinalTextoEl = document.getElementById('puntuacion-final-texto');
+    const btnReiniciar = document.getElementById('btn-reiniciar');
+    
+    // Variables de estado del juego
+    let preguntasSeleccionadas = [];
+    let preguntaActualIndex = 0;
+    let puntuacion = 0;
+    let btnSiguiente; 
+    let lecturaAutomaticaActivada = false;
+
+    // Función para leer texto en voz alta
+    function leerEnVozAlta(texto, onEndCallback) {
+        // Cancelar cualquier lectura anterior para evitar superposiciones
+        speechSynthesis.cancel();
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'es-UY'; // Especificar español de Uruguay o 'es-ES'
+            utterance.rate = 0.9;
+            if (onEndCallback) {
+                utterance.onend = onEndCallback;
+            }
+            speechSynthesis.speak(utterance);
+        } else {
+            alert("Tu navegador no soporta la lectura en voz alta.");
+        }
+    }
+    
+    // Función para alternar el estado de lectura automática
+    function toggleLecturaAutomatica() {
+        lecturaAutomaticaActivada = !lecturaAutomaticaActivada;
+        btnLeerPregunta.classList.toggle('activo', lecturaAutomaticaActivada);
+        iconoVolumenOn.style.display = lecturaAutomaticaActivada ? 'block' : 'none';
+        iconoVolumenOff.style.display = lecturaAutomaticaActivada ? 'none' : 'block';
+
+        if (!lecturaAutomaticaActivada) {
+            speechSynthesis.cancel();
+        } else {
+            // Si se activa, lee la pregunta actual
+            leerEnVozAlta(textoPreguntaEl.textContent);
+        }
+    }
+
+    // Función para generar las opciones de documentos
+    function popularOpcionesDocumentos() {
+        opcionesDocumentosContainer.innerHTML = ''; // Limpiar opciones previas
+        const docs = Object.keys(preguntas_db).sort();
+        docs.forEach(doc => {
+            const checkboxId = `doc-${doc}`;
+            const label = document.createElement('label');
+            label.setAttribute('for', checkboxId);
+            label.textContent = `Doc. ${doc}`;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = checkboxId;
+            checkbox.value = doc;
+
+            opcionesDocumentosContainer.appendChild(checkbox);
+            opcionesDocumentosContainer.appendChild(label);
+        });
+    }
+
+    // Función para iniciar el juego
+    function iniciarJuego() {
+        const checkboxes = document.querySelectorAll('#opciones-documentos input[type="checkbox"]:checked');
+        if (checkboxes.length === 0) {
+            errorSeleccion.style.display = 'block';
+            return;
+        }
+        errorSeleccion.style.display = 'none';
+        
+        preguntasSeleccionadas = [];
+        checkboxes.forEach(cb => {
+            preguntasSeleccionadas.push(...preguntas_db[cb.value]);
+        });
+        
+        preguntasSeleccionadas.sort(() => Math.random() - 0.5);
+
+        puntuacion = 0;
+        preguntaActualIndex = 0;
+        
+        pantallaInicio.style.display = 'none';
+        pantallaQuiz.style.display = 'block';
+        pantallaFinal.style.display = 'none';
+        
+        mostrarSiguientePregunta();
+    }
+
+    // Función para mostrar la siguiente pregunta
+    function mostrarSiguientePregunta() {
+        speechSynthesis.cancel();
+        if (preguntaActualIndex >= preguntasSeleccionadas.length) {
+            mostrarPantallaFinal();
+            return;
+        }
+
+        limpiarFeedback();
+        const preguntaActual = preguntasSeleccionadas[preguntaActualIndex];
+        const preguntasTotales = preguntasSeleccionadas.length;
+        
+        contadorPreguntaEl.textContent = `Pregunta ${preguntaActualIndex + 1} de ${preguntasTotales}`;
+        preguntasRestantesEl.textContent = `Quedan: ${preguntasTotales - (preguntaActualIndex + 1)}`;
+        puntuacionActualEl.textContent = `Puntuación: ${puntuacion}`;
+        textoPreguntaEl.textContent = preguntaActual.pregunta;
+
+        btnVerdadero.disabled = false;
+        btnFalso.disabled = false;
+        btnVerdadero.classList.remove('correcto', 'incorrecto');
+        btnFalso.classList.remove('correcto', 'incorrecto');
+
+        if (lecturaAutomaticaActivada) {
+            leerEnVozAlta(preguntaActual.pregunta);
+        }
+    }
+
+    // Función para manejar la selección de respuesta
+    function seleccionarRespuesta(respuestaUsuario) {
+        btnVerdadero.disabled = true;
+        btnFalso.disabled = true;
+
+        const preguntaActual = preguntasSeleccionadas[preguntaActualIndex];
+        const esCorrecto = respuestaUsuario === preguntaActual.respuesta;
+        const botonSeleccionado = respuestaUsuario ? btnVerdadero : btnFalso;
+        const botonCorrecto = preguntaActual.respuesta ? btnVerdadero : btnFalso;
+
+        let textoFeedback;
+
+        if (esCorrecto) {
+            puntuacion++;
+            botonSeleccionado.classList.add('correcto');
+            textoFeedback = `Correcto. ${preguntaActual.justificacion}`;
+            feedbackEl.innerHTML = `
+                <h3>¡Correcto!</h3>
+                <p class="justificacion">${preguntaActual.justificacion}</p>
+            `;
+            feedbackEl.classList.add('correcto');
+        } else {
+            const respuestaCorrectaTexto = preguntaActual.respuesta ? 'Verdadero' : 'Falso';
+            botonSeleccionado.classList.add('incorrecto');
+            botonCorrecto.classList.add('correcto');
+            textoFeedback = `Incorrecto. La respuesta correcta era: ${respuestaCorrectaTexto}. ${preguntaActual.justificacion}`;
+            feedbackEl.innerHTML = `
+                <h3>Incorrecto</h3>
+                <p>La respuesta correcta era: <strong>${respuestaCorrectaTexto}</strong></p>
+                <p class="justificacion">${preguntaActual.justificacion}</p>
+            `;
+            feedbackEl.classList.add('incorrecto');
+        }
+        
+        puntuacionActualEl.textContent = `Puntuación: ${puntuacion}`;
+        preguntaActualIndex++;
+
+        // Leer feedback si la opción está activa
+        if (lecturaAutomaticaActivada) {
+            leerEnVozAlta(textoFeedback, crearBotonSiguiente);
+        } else {
+            crearBotonSiguiente();
+        }
+    }
+    
+    function crearBotonSiguiente() {
+        btnSiguiente = document.createElement('button');
+        btnSiguiente.id = 'btn-siguiente';
+        btnSiguiente.className = 'btn';
+        btnSiguiente.textContent = 'Siguiente Pregunta';
+        feedbackEl.appendChild(btnSiguiente);
+        btnSiguiente.addEventListener('click', mostrarSiguientePregunta);
+    }
+
+    function limpiarFeedback() {
+        feedbackEl.innerHTML = '';
+        feedbackEl.className = '';
+    }
+
+    function mostrarPantallaFinal() {
+        pantallaQuiz.style.display = 'none';
+        pantallaFinal.style.display = 'block';
+        
+        const total = preguntasSeleccionadas.length;
+        const porcentaje = total > 0 ? (puntuacion / total) * 100 : 0;
+        
+        puntuacionFinalTextoEl.textContent = `Tu puntuación final es: ${puntuacion} / ${total}`;
+        
+        let mensaje;
+        if (porcentaje === 100) {
+            mensaje = '¡Felicidades! ¡Dominio total!';
+        } else if (porcentaje >= 70) {
+            mensaje = '¡Muy buen trabajo!';
+        } else if (porcentaje >= 50) {
+             mensaje = '¡Buen intento! Estás en camino.';
+        } else {
+            mensaje = 'Sigue estudiando para fortalecer tus conocimientos.';
+        }
+        mensajeFinalEl.textContent = mensaje;
+        
+        if (lecturaAutomaticaActivada) {
+            leerEnVozAlta(`Fin del juego. Tu puntuación final es ${puntuacion} de ${total}. ${mensaje}`);
+        }
+    }
+
+    // Event Listeners
+    btnIniciar.addEventListener('click', iniciarJuego);
+    btnVerdadero.addEventListener('click', () => seleccionarRespuesta(true));
+    btnFalso.addEventListener('click', () => seleccionarRespuesta(false));
+    btnReiniciar.addEventListener('click', () => {
+        speechSynthesis.cancel();
+        pantallaFinal.style.display = 'none';
+        pantallaInicio.style.display = 'block';
+        popularOpcionesDocumentos();
+    });
+    btnLeerPregunta.addEventListener('click', toggleLecturaAutomatica);
+    
+    // Inicializar la aplicación
+    popularOpcionesDocumentos();
+
+    </script>
+</body>
+</html>
